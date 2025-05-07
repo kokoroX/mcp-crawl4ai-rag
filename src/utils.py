@@ -11,6 +11,7 @@ import openai
 # Load OpenAI API key for embeddings
 openai.api_key = os.getenv("OPENAI_API_KEY")
 openai.base_url = os.getenv("OPENAI_BASE_URL")
+model = os.getenv("OPENAI_MODEL")
 
 def get_supabase_client() -> Client:
     """
@@ -42,7 +43,7 @@ def create_embeddings_batch(texts: List[str]) -> List[List[float]]:
         
     try:
         response = openai.embeddings.create(
-            model="text-embedding-v3", # Hardcoding embedding model for now, will change this later to be more dynamic
+            model=model, # Hardcoding embedding model for now, will change this later to be more dynamic
             input=texts
         )
         return [item.embedding for item in response.data]
