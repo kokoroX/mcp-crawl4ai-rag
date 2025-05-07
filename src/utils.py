@@ -6,11 +6,13 @@ from typing import List, Dict, Any, Optional
 import json
 from supabase import create_client, Client
 from urllib.parse import urlparse
-import openai
+from openai import OpenAI
 
 # Load OpenAI API key for embeddings
-openai.api_key = os.getenv("OPENAI_API_KEY")
-openai.base_url = os.getenv("OPENAI_BASE_URL")
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY"),
+    base_url=os.getenv("OPENAI_BASE_URL")
+)
 model = os.getenv("OPENAI_MODEL")
 
 def get_supabase_client() -> Client:
@@ -42,7 +44,7 @@ def create_embeddings_batch(texts: List[str]) -> List[List[float]]:
         return []
         
     try:
-        response = openai.embeddings.create(
+        response = client.embeddings.create(
             model=model, # Hardcoding embedding model for now, will change this later to be more dynamic
             input=texts
         )
@@ -144,6 +146,9 @@ def add_documents_to_supabase(
         try:
             client.table("crawled_pages").insert(batch_data).execute()
         except Exception as e:
+            # 成功时将结果追加写入debug.md
+            # with open("/Users/kokoro/Desktop/ai-workflow/debug.md", "a", encoding="utf-8") as f:
+            #     f.write(f"add_documents_to_supabase: {e}\n\n")
             print(f"Error inserting batch into Supabase: {e}")
 
 def search_documents(
